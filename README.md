@@ -1,8 +1,17 @@
 # Tacotron-Phoneme
 
+This is edited fork of [Voice Cloning App](https://github.com/BenAAndrew/Voice-Cloning-App)
+
 ## Training
 > Add your dataset to the dataset folder; check the metadata.csv file for example, then add your wav files to dataset/wavs
 
 > Download pretrained [Tacotron model](https://drive.google.com/file/d/1c5ZTuT7J08wLUoVZ2KkUs_VdZuJ86ZqA/view?usp=sharing)
 
-> Start training with python train.py -l tacotron2_statedict.pt
+> Start training with python train.py -l tacotron2_statedict.pt -p
+
+> Resume training with python train.py -r
+
+## Args
+-l learning path
+-r resume training
+-p resets epochs and iterations to zero. To be used when training with pretrained Tacotron model.
