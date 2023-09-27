@@ -20,6 +20,7 @@ This is edited fork of [Voice Cloning App](https://github.com/BenAAndrew/Voice-C
 
 | Args      | Description |
 | ----------- | ----------- |
+| -l   | learning path        |
 | -r      | resume       |
 | -p   | reset epoch and iterations        |
 
