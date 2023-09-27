@@ -19,10 +19,10 @@ This is edited fork of [Voice Cloning App](https://github.com/BenAAndrew/Voice-C
 * -p resets epochs and iterations to zero. To be used when training with pretrained Tacotron model.
 
   | Arg      | Description |
-| :---        |    :----:   |
+| -----------        |   -----------   |
 | -l     | learning path       |
 | -r   | resume training        |
-| -p   | resets epochs and iterations to zero. To be used when training with pretrained Tacotron model.       |
+| -p   | resets epochs and iterations to zero      |
 
 ## TODO
 - [ ] Add download links for Hifi-Gan vocoder model
