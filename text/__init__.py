@@ -19,7 +19,6 @@ def text_to_sequence_2(text):
     symbol_to_id = {s: i for i, s in enumerate(symbols)}
     for s in text:
         if s not in symbol_to_id:
-            print(f'{s} not found!')
             raise Exception(f'{s} not found!')
     
     sequence = np.array([[symbol_to_id[s] for s in text if s in symbol_to_id]])
