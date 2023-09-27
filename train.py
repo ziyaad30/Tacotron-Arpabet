@@ -2,6 +2,7 @@ import os
 import time
 import argparse
 import torch
+import torch.nn as nn
 from torch.utils.data import DataLoader
 import random
 from utils import get_learning_rate, load_labels_file, train_test_split, calc_avgmax_attention
