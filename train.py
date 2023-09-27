@@ -9,7 +9,7 @@ from tacotron2_model import Tacotron2, TextMelCollate, Tacotron2Loss
 from tacotron2_model.utils import process_batch
 from validate import validate
 from voice_dataset import VoiceDataset
-from text import symbols, text_to_sequence_1, text_to_sequence_2
+from text import symbols, text_to_sequence_2
 from checkpoint import warm_start_model, save_checkpoint, load_checkpoint, latest_checkpoint_path, oldest_checkpoint_path
 from logger import Tacotron2Logger
 from hparams import hparams as hps
@@ -61,10 +61,7 @@ def train(args):
     print("Loading model...")
     model = Tacotron2().cuda()
     
-    if hps.sch:
-        optimizer = torch.optim.Adam(model.parameters(), lr = learning_rate, betas = hps.betas, eps = hps.eps, weight_decay = hps.weight_decay)
-    else:
-        optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=hps.weight_decay)
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate, weight_decay=hps.weight_decay)
     
     criterion = Tacotron2Loss()
     print("Loaded model")
@@ -108,17 +105,6 @@ def train(args):
         iteration = 0
         epoch_offset = 0
     
-    # get scheduler
-    if hps.sch:
-        lr_lambda = lambda step: hps.sch_step**0.5*min((step+1)*hps.sch_step**-1.5, (step+1)**-0.5)
-        if args.resume:
-            try:
-                scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda, last_epoch = iteration)
-            except:
-                scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
-        else:
-            scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda)
-    
     # Enable Multi GPU
     if args.multi_gpu and torch.cuda.device_count() > 1:
         logging.info(f"Using {torch.cuda.device_count()} GPUs")
@@ -145,9 +131,8 @@ def train(args):
         for _, batch in enumerate(pbar(train_loader, position=0, leave=False)):
             start = time.perf_counter()
             
-            if not hps.sch:
-                for param_group in optimizer.param_groups:
-                    param_group["lr"] = learning_rate
+            for param_group in optimizer.param_groups:
+                param_group["lr"] = learning_rate
 
             # Backpropogation
             model.zero_grad()
@@ -161,13 +146,9 @@ def train(args):
             grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), hps.grad_clip_thresh)
             optimizer.step()
             
-            if hps.sch:
-                scheduler.step()
-
             duration = time.perf_counter() - start
             
             if iteration % hps.iters_per_log == 0:
-                learning_rate = optimizer.param_groups[0]['lr']
                 logger.log_training(reduced_loss, grad_norm, learning_rate, iteration)
                 pbar.write(
                     "[Epoch {}: Iteration {}] Train loss {:.7f}, Attention score {:.7f}, lr: {:.7f} {:.2f}s/it".format(
