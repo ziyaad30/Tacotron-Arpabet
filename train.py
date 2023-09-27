@@ -181,7 +181,7 @@ def train(args):
                     pbar.write(f'Evaluating model {checkpoint_path}...')
                     # output = load_model(checkpoint_path).inference(alignment_sequence)
                     model.eval()
-                    mel_outputs, mel_outputs_postnet, _, alignment = model.inference(alignment_sequence, 1000)
+                    mel_outputs, mel_outputs_postnet, _, alignment = load_model(checkpoint_path).inference(alignment_sequence)
                     model.train()
                     logger.sample_train(y_pred, iteration)
                     logger.sample_infer(mel_outputs, mel_outputs_postnet, alignment, iteration)
