@@ -107,7 +107,7 @@ def train(args):
     
     # Enable Multi GPU
     if args.multi_gpu and torch.cuda.device_count() > 1:
-        logging.info(f"Using {torch.cuda.device_count()} GPUs")
+        print(f"Using {torch.cuda.device_count()} GPUs")
         model = nn.DataParallel(model)
     
     alignment_sequence = text_to_sequence_2(hps.eg_text)
