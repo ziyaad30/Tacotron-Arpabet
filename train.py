@@ -124,12 +124,11 @@ def train(args):
             os.chmod(args.log_dir, 0o775)
         logger = Tacotron2Logger(args.log_dir)
     
-    pbar = tqdm
     model.train()
     validation_losses = []
     for epoch in range(epoch_offset, epochs):
         print(f"Progress - {epoch}/{epochs}")
-        for _, batch in enumerate(pbar(train_loader, position=0, leave=False)):
+        for _, batch in enumerate(train_loader):
             start = time.perf_counter()
             
             for param_group in optimizer.param_groups:
@@ -151,7 +150,7 @@ def train(args):
             
             if iteration % hps.iters_per_log == 0:
                 logger.log_training(reduced_loss, grad_norm, learning_rate, iteration)
-                pbar.write(
+                print(
                     "[Epoch {}: Iteration {}] Train loss {:.7f}, Attention score {:.7f}, lr: {:.7f} {:.2f}s/it".format(
                         epoch, iteration, reduced_loss, avgmax_attention, learning_rate, duration
                     )
@@ -159,10 +158,10 @@ def train(args):
 
             # Validate & save checkpoint
             if iteration % hps.iters_per_ckpt == 0:
-                pbar.write("Validating model")
+                print("Validating model")
                 val_loss, avgmax_attention = validate(model, val_loader, criterion, iteration)
                 validation_losses.append(val_loss)
-                pbar.write(
+                print(
                     "Saving model and optimizer state at iteration {} to {}. Validation score = {:.5f}, Attention score = {:.5f}".format(
                         iteration, args.checkpoint_path, val_loss, avgmax_attention
                     )
@@ -178,7 +177,7 @@ def train(args):
                     args.checkpoint_path,
                 )
                 if alignment_sequence is not None:
-                    pbar.write(f'Evaluating model {checkpoint_path}...')
+                    print(f'Evaluating model {checkpoint_path}...')
                     # output = load_model(checkpoint_path).inference(alignment_sequence)
                     model.eval()
                     mel_outputs, mel_outputs_postnet, _, alignment = load_model(checkpoint_path).inference(alignment_sequence)
@@ -188,7 +187,7 @@ def train(args):
                 
                 old_ckpt = oldest_checkpoint_path(args.checkpoint_path, "checkpoint_[0-9]*", preserved=2)
                 if os.path.exists(old_ckpt):
-                    pbar.write(f"Removed {old_ckpt}")
+                    print(f"Removed {old_ckpt}")
                     os.remove(old_ckpt)
 
             iteration += 1
