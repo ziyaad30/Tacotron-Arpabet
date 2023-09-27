@@ -20,8 +20,8 @@ This is edited fork of [Voice Cloning App](https://github.com/BenAAndrew/Voice-C
 
 | Args      | Description |
 | ----------- | ----------- |
-| r      | Title       |
-| p   | Text        |
+| -r      | Title       |
+| -p   | Text        |
 
 ## TODO
 - [ ] Add download links for Hifi-Gan vocoder model
