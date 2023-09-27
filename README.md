@@ -12,6 +12,6 @@ This is edited fork of [Voice Cloning App](https://github.com/BenAAndrew/Voice-C
 > Resume training with python train.py -r
 
 ## Args
--l learning path
--r resume training
--p resets epochs and iterations to zero. To be used when training with pretrained Tacotron model.
+* -l learning path
+* -r resume training
+* -p resets epochs and iterations to zero. To be used when training with pretrained Tacotron model.
