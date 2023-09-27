@@ -8,10 +8,10 @@ This is edited fork of [Voice Cloning App](https://github.com/BenAAndrew/Voice-C
 > Download the pretrained model here: [Tacotron model](https://drive.google.com/file/d/1c5ZTuT7J08wLUoVZ2KkUs_VdZuJ86ZqA/view?usp=sharing) and place in the root directory
 
 > Start training with:
-`` python train.py -l tacotron2_statedict.pt -p ``
+` python train.py -l tacotron2_statedict.pt -p `
 
 > Resume training with:
-`` python train.py -r ``
+` python train.py -r `
 
 ## Args
 * -l learning path
