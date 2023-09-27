@@ -4,13 +4,8 @@ class hparams:
     ################################
     # Train                        #
     ################################
-    pin_mem = False
-    n_workers = 0
-    lr = 1e-4
-    betas = (0.9, 0.999)
-    eps = 1e-6
-    sch = False
-    sch_step = 4000
+    pin_mem = True
+    n_workers = 4
     epochs = 8000
     batch_size = 16
     iters_per_log = 10
