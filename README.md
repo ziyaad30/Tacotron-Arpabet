@@ -15,9 +15,9 @@ This is edited fork of [Voice Cloning App](https://github.com/BenAAndrew/Voice-C
 
 | Args      | Description |
 | ----------- | ----------- |
-| -l   | learning path        |
-| -r      | resume       |
-| -p   | reset epoch and iterations. To be used when training with pretrained Tacotron model.       |
+| -l   | learning path |
+| -r      | resume training |
+| -p   | reset epoch and iterations. To be used when training with pretrained Tacotron model. |
 
 ## TODO
 - [ ] Add download links for Hifi-Gan vocoder model
