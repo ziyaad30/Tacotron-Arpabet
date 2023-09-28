@@ -3,7 +3,9 @@
 ### This is edited fork of [Voice Cloning App](https://github.com/BenAAndrew/Voice-Cloning-App)
 
 ## Requirements
-> git clone https://github.com/ziyaad30/Tacotron-Phoneme.git cd into Tacotron-Phoneme
+> git clone https://github.com/ziyaad30/Tacotron-Phoneme.git
+
+> cd into Tacotron-Phoneme
 
 > pip install -r requirements.txt
 
