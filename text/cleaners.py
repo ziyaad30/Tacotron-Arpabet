@@ -30,6 +30,7 @@ _abbreviations = [(re.compile('\\b%s\\.' % x[0], re.IGNORECASE), x[1]) for x in 
   ('ltd', 'limited'),
   ('col', 'colonel'),
   ('ft', 'fort'),
+  ('inc', 'incorporated'),
 ]]
 
 
@@ -92,7 +93,6 @@ def phoneme_text(text, lang='en_us'):
 def english_cleaners_2(text):
     '''Pipeline for English text, including number and abbreviation expansion.'''
     text = text.strip()
-    # text = convert_to_ascii(text)
     text = lowercase(text)
     text = expand_numbers(text)
     text = expand_abbreviations(text)
@@ -105,7 +105,6 @@ def english_cleaners_2(text):
 def english_cleaners(text):
     '''Pipeline for English text, including number and abbreviation expansion.'''
     text = text.strip()
-    text = convert_to_ascii(text)
     text = lowercase(text)
     text = expand_numbers(text)
     text = expand_abbreviations(text)
