@@ -1,10 +1,10 @@
 # Tacotron-Phoneme
 
 # Requirements
-- Download [en_us_cmudict_ipa_forward.pt](https://public-asai-dl-models.s3.eu-central-1.amazonaws.com/DeepPhonemizer/en_us_cmudict_ipa_forward.pt)
 - git clone https://github.com/ziyaad30/Tacotron-Phoneme.git
 - cd into Tacotron-Phoneme
 - pip install -r requirements.txt
+- Download [en_us_cmudict_ipa_forward.pt](https://public-asai-dl-models.s3.eu-central-1.amazonaws.com/DeepPhonemizer/en_us_cmudict_ipa_forward.pt)
 
 This is edited fork of [Voice Cloning App](https://github.com/BenAAndrew/Voice-Cloning-App)
 
