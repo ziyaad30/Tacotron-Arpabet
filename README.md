@@ -1,6 +1,6 @@
 # Tacotron-Phoneme
 
-### This is edited fork of [Voice Cloning App](https://github.com/BenAAndrew/Voice-Cloning-App)
+### This is an edited fork of [Voice Cloning App](https://github.com/BenAAndrew/Voice-Cloning-App)
 
 ## Requirements
 > git clone https://github.com/ziyaad30/Tacotron-Phoneme.git
