@@ -3,7 +3,7 @@
 ### This is an edited fork of [Voice Cloning App](https://github.com/BenAAndrew/Voice-Cloning-App)
 
 ## Requirements
-> git clone https://github.com/ziyaad30/Tacotron-Phoneme.git
+> git clone https://github.com/ziyaad30/Tacotron-Arpabet.git
 
 > cd into Tacotron-Phoneme
 
