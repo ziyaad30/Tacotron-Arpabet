@@ -10,11 +10,13 @@ from tacotron2_model import Tacotron2, TextMelCollate, Tacotron2Loss
 from tacotron2_model.utils import process_batch
 from validate import validate
 from voice_dataset import VoiceDataset
-from text import symbols, text_to_sequence_2
+from text import symbols, text_to_sequence_2, cmudict
 from checkpoint import warm_start_model, save_checkpoint, load_checkpoint, latest_checkpoint_path, oldest_checkpoint_path
 from logger import Tacotron2Logger
 from hparams import hparams as hps
 from tqdm import tqdm
+
+pbar = tqdm
 
 
 def load_model(model_path):
@@ -40,6 +42,7 @@ def load_model(model_path):
         model = Tacotron2()
         model.load_state_dict(torch.load(model_path, map_location=torch.device("cpu"))["state_dict"])
     return model
+
 
 
 def train(args):
@@ -72,8 +75,8 @@ def train(args):
     random.shuffle(filepaths_and_text)
     train_files, test_files = train_test_split(filepaths_and_text, hps.train_size)
     
-    trainset = VoiceDataset(train_files, args.audio_directory)
-    valset = VoiceDataset(test_files, args.audio_directory)
+    trainset = VoiceDataset(train_files, args.audio_directory, hps.cmudict_path)
+    valset = VoiceDataset(test_files, args.audio_directory, hps.cmudict_path)
     collate_fn = TextMelCollate()
 
     # Data loaders
@@ -111,7 +114,8 @@ def train(args):
         print(f"Using {torch.cuda.device_count()} GPUs")
         model = nn.DataParallel(model)
     
-    alignment_sequence = text_to_sequence_2(hps.eg_text)
+    cmu = cmudict.CMUDict(hps.cmudict_path)
+    alignment_sequence = text_to_sequence_2(hps.eg_text, dictionary=cmu)
     
     if args.checkpoint_path != '':
         if not os.path.isdir(args.checkpoint_path):
@@ -127,8 +131,8 @@ def train(args):
     model.train()
     validation_losses = []
     for epoch in range(epoch_offset, epochs):
-        print(f"Progress - {epoch}/{epochs}")
-        for _, batch in enumerate(train_loader):
+        # print(f"Progress - {epoch}/{epochs} Epochs")
+        for _, batch in enumerate(pbar(train_loader, desc="Epoch {}".format(epoch), position=0, leave=False)):
             start = time.perf_counter()
             
             for param_group in optimizer.param_groups:
@@ -138,9 +142,9 @@ def train(args):
             model.zero_grad()
             y, y_pred = process_batch(batch, model)
 
-            loss = criterion(y_pred, y)
+            loss, items = criterion(y_pred, y)
             avgmax_attention = calc_avgmax_attention(batch[-1], batch[1], y_pred[-1])
-            reduced_loss = loss.item()
+            reduced_loss = loss
             loss.backward()
 
             grad_norm = torch.nn.utils.clip_grad_norm_(model.parameters(), hps.grad_clip_thresh)
@@ -150,18 +154,14 @@ def train(args):
             
             if iteration % hps.iters_per_log == 0:
                 logger.log_training(reduced_loss, grad_norm, learning_rate, iteration)
-                print(
-                    "[Epoch {}: Iteration {}] Train loss {:.7f}, Attention score {:.7f}, lr: {:.7f} {:.2f}s/it".format(
-                        epoch, iteration, reduced_loss, avgmax_attention, learning_rate, duration
-                    )
-                )
+                pbar.write('Step: {}, Mel Loss: {:.7f}, Gate Loss: {:.7f}, Grad Norm: {:.7f}, lr: {:.5f} {:.1f}s/it'.format(iteration, items[0], items[1], grad_norm, learning_rate, duration))
 
             # Validate & save checkpoint
             if iteration % hps.iters_per_ckpt == 0:
-                print("Validating model")
+                pbar.write("Validating model")
                 val_loss, avgmax_attention = validate(model, val_loader, criterion, iteration)
                 validation_losses.append(val_loss)
-                print(
+                pbar.write(
                     "Saving model and optimizer state at iteration {} to {}. Validation score = {:.5f}, Attention score = {:.5f}".format(
                         iteration, args.checkpoint_path, val_loss, avgmax_attention
                     )
@@ -177,17 +177,17 @@ def train(args):
                     args.checkpoint_path,
                 )
                 if alignment_sequence is not None:
-                    print(f'Evaluating model {checkpoint_path}...')
-                    # output = load_model(checkpoint_path).inference(alignment_sequence)
+                    pbar.write(f'Evaluating model {checkpoint_path}...')
                     model.eval()
                     mel_outputs, mel_outputs_postnet, _, alignment = load_model(checkpoint_path).inference(alignment_sequence)
                     model.train()
                     logger.sample_train(y_pred, iteration)
                     logger.sample_infer(mel_outputs, mel_outputs_postnet, alignment, iteration)
+                    model.train()
                 
                 old_ckpt = oldest_checkpoint_path(args.checkpoint_path, "checkpoint_[0-9]*", preserved=2)
                 if os.path.exists(old_ckpt):
-                    print(f"Removed {old_ckpt}")
+                    pbar.write(f"Removed {old_ckpt}")
                     os.remove(old_ckpt)
 
             iteration += 1
@@ -195,11 +195,11 @@ def train(args):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--checkpoint_path", type=str, default = 'checkpoints', help="checkpoint path")
-    parser.add_argument("-m", "--metadata_path", type=str, default = 'dataset/metadata.csv', help="metadata path")
-    parser.add_argument("-l", "--transfer_learning_path", type=str, default = '', help="learning path")
-    parser.add_argument("-a", "--audio_directory", type=str, default = 'dataset/wavs', help="directory to audio")
-    parser.add_argument("--log_dir", type=str, default = 'logs', help="tensorboard log directory")
+    parser.add_argument("-c", "--checkpoint_path", type=str, default = './checkpoints', help="checkpoint path")
+    parser.add_argument("-m", "--metadata_path", type=str, default = './dataset/metadata.csv', help="metadata path")
+    parser.add_argument("-l", "--transfer_learning_path", type=str, default = 'tacotron2_statedict.pt', help="learning path")
+    parser.add_argument("-a", "--audio_directory", type=str, default = './dataset/wavs', help="directory to audio")
+    parser.add_argument("--log_dir", type=str, default = './logs', help="tensorboard log directory")
     parser.add_argument('-r', '--resume', action='store_true')
     parser.add_argument('-p', '--pretrained', action='store_true')
     parser.add_argument('-multi', '--multi_gpu', action='store_true')
