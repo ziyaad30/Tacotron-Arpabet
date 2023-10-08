@@ -9,7 +9,7 @@
 
 > pip install -r requirements.txt
 
-> Download [en_us_cmudict_ipa_forward.pt](https://public-asai-dl-models.s3.eu-central-1.amazonaws.com/DeepPhonemizer/en_us_cmudict_ipa_forward.pt) and place it in this root directory.
+> ~~Download [en_us_cmudict_ipa_forward.pt](https://public-asai-dl-models.s3.eu-central-1.amazonaws.com/DeepPhonemizer/en_us_cmudict_ipa_forward.pt) and place it in this root directory.~~
 
 ## Training
 > Add your dataset to the dataset folder; check the metadata.csv file for example, then add your wav files to dataset/wavs
