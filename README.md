@@ -1,4 +1,4 @@
-# Tacotron-Phoneme
+# Tacotron-Arpabet
 
 ### This is an edited fork of [Voice Cloning App](https://github.com/BenAAndrew/Voice-Cloning-App)
 
