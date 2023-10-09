@@ -15,7 +15,6 @@ DEFAULT_ALPHABET = ['_', '-', '!', "'", '(', ')', ',', '.', ':', ';', '?', ' ',
                    '@JH', '@K', '@L', '@M', '@N', '@NG', '@OW', '@OW0', '@OW1', '@OW2', '@OY', '@OY0', '@OY1', '@OY2', '@P', '@R', '@S', '@SH', '@T',
                    '@TH', '@UH', '@UH0', '@UH1', '@UH2', '@UW', '@UW0', '@UW1', '@UW2', '@V', '@W', '@Y', '@Z', '@ZH']
 
-print(len(DEFAULT_ALPHABET))
 
 def transfer_symbols_embedding(
     original_embedding_weight: torch.Tensor, embedding_layer, new_symbols: list, original_symbols: Optional[list] = None
@@ -151,15 +150,7 @@ def load_checkpoint(checkpoint_path, model, optimizer, train_loader):
     return model, optimizer, iteration, epoch
  
  
-def save_checkpoint(
-    model,
-    optimizer,
-    learning_rate,
-    iteration,
-    symbols,
-    epoch,
-    output_directory,
-):
+def save_checkpoint(model, optimizer, learning_rate, iteration, symbols, epoch, output_directory):
     checkpoint_name = "checkpoint_{}".format(iteration)
     output_path = os.path.join(output_directory, checkpoint_name)
     torch.save(
@@ -173,7 +164,21 @@ def save_checkpoint(
         },
         output_path,
     )
+    # save_test_checkpoint(model, optimizer, learning_rate, iteration, symbols, epoch, output_directory)
     return output_path
+
+
+def save_best_checkpoint(model, optimizer, learning_rate, iteration, symbols, epoch, output_directory):
+    checkpoint_name = "tacotron2.pt"
+    output_path = os.path.join("ckpt", checkpoint_name)
+    torch.save(
+        {
+            "iteration": iteration,
+            "symbols": symbols,
+            "state_dict": get_state_dict(model),
+        },
+        output_path,
+    )
 
 
 def extract_digits(f):
@@ -185,7 +190,6 @@ def latest_checkpoint_path(dir_path, regex="checkpoint_[0-9]*"):
     f_list = glob.glob(os.path.join(dir_path, regex))
     f_list.sort(key=lambda f: int("".join(filter(str.isdigit, f))))
     x = f_list[-1]
-    print(x)
     return x
 
 
@@ -194,6 +198,5 @@ def oldest_checkpoint_path(dir_path, regex="ckpt_[0-9]*", preserved=4):
     f_list.sort(key=lambda f: extract_digits(f))
     if len(f_list) > preserved:
         x = f_list[0]
-        # print(f"oldest_checkpoint_path:{x}")
         return x
     return ""
