@@ -16,4 +16,4 @@ class hparams:
     train_size = 0.8
     log_dir = 'logs'
     cmudict_path = 'text/cmu_dictionary'
-    checkpoint_path = '/content/drive/MyDrive/checkpoints'
+    checkpoint_path = '/content/drive/MyDrive/Tacotron2/checkpoints'
