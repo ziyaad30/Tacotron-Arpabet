@@ -4,7 +4,6 @@ import random
 import torch
 from tacotron2_model import TacotronSTFT
 from scipy.io.wavfile import read
-from tokenizers import Tokenizer
 from text.cleaners import english_cleaners
 from text import text_to_sequence, cmudict
 
