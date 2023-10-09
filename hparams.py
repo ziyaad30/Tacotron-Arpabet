@@ -7,7 +7,7 @@ class hparams:
     pin_mem = False
     n_workers = 0
     epochs = 8000
-    batch_size = 4
+    batch_size = 16
     iters_per_log = 10
     iters_per_ckpt = 100
     weight_decay = 1e-6
