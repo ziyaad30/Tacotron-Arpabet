@@ -72,14 +72,27 @@ def check_ellipse(text):
     return text
 
 
+def custom_pronounce(text):
+    text = text.replace("decavalcante", "decavel'kuntay")
+    text = text.replace("simone", "simonie")
+    text = text.replace("apalachin", "apaleikin")
+    
+    return text
+
+
 def english_cleaners(text):
     '''Pipeline for English text, including number and abbreviation expansion.'''
     text = text.strip()
     text = convert_to_ascii(text)
     text = lowercase(text)
+    text = custom_pronounce(text)
     text = expand_numbers(text)
     text = expand_abbreviations(text)
     text = collapse_whitespace(text)
+    text = text.replace('(', '')
+    text = text.replace(')', '')
+    text = text.replace(':', ' :')
+    text = text.replace(';', ' ;')
     text = text.replace('"', '')
     text = text.replace('!', ' !')
     text = text.replace('?', ' ?')
