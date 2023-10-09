@@ -32,7 +32,7 @@ def validate(model, val_loader, criterion, iteration):
         val_avgmax_attention = 0
         for i, batch in enumerate(val_loader):
             y, y_pred = process_batch(batch, model)
-            loss = criterion(y_pred, y)
+            loss, items = criterion(y_pred, y)
             reduced_val_loss = loss.item()
             val_loss += reduced_val_loss
             avgmax_attention = calc_avgmax_attention(batch[-1], batch[1], y_pred[-1])
@@ -40,5 +40,4 @@ def validate(model, val_loader, criterion, iteration):
         val_loss = val_loss / (i + 1)
         val_avgmax_attention = val_avgmax_attention / (i + 1)
 
-    model.train()
     return val_loss, val_avgmax_attention
