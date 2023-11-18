@@ -1,10 +1,9 @@
-import re
-from text.cleaners import english_cleaners
-import torch
-import numpy as np
-from text import cmudict
+import string
 
-_pad        = '_'
+from text import cmudict
+from text.cleaners import english_cleaners
+
+_pad = '_'
 _punctuation = '!\'(),.:;? '
 _special = '-'
 _letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
@@ -13,114 +12,77 @@ _letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
 _arpabet = ['@' + s for s in cmudict.valid_symbols]
 
 # Export all symbols:
-symbols = [_pad] + list(_special) + list(_punctuation) + list(_letters) + _arpabet
-
+symbols = [_pad] + list(_special) + list(_punctuation) + list(_letters) + list(_arpabet)
 
 _symbol_to_id = {s: i for i, s in enumerate(symbols)}
 _id_to_symbol = {i: s for i, s in enumerate(symbols)}
-_curly_re = re.compile(r'(.*?)\{(.+?)\}(.*)')
 
 
-def get_arpabet(word, dictionary):
-    word_arpabet = dictionary.lookup(word)
-    if word_arpabet is not None:
-        return "{" + word_arpabet[0] + "}"
-    else:
-        return word
+cmu_dict = {}
+
+with open('text/en_dictionary') as f:
+    for entry in f:
+        tokens = []
+        for t in entry.split():
+            tokens.append(t)
+        cmu_dict[tokens[0]] = tokens[1:]
 
 
-def text_to_sequence(text, cleaner_names=["english_cleaners"], dictionary=None):
-    '''Converts a string of text to a sequence of IDs corresponding to the symbols in the text.
-
-    The text can optionally have ARPAbet sequences enclosed in curly braces embedded
-    in it. For example, "Turn left on {HH AW1 S S T AH0 N} Street."
-
-    Args:
-      text: string to convert to a sequence
-      cleaner_names: names of the cleaner functions to run the text through
-      dictionary: arpabet class with arpabet dictionary
-
-    Returns:
-      List of integers corresponding to the symbols in the text
-    '''
+def text_to_sequence(text, stop_on_word_error=True):
+    phoneme = []
     sequence = []
-    space = _symbols_to_sequence(' ')
-    # Check for curly braces and treat their contents as ARPAbet:
-    while len(text):
-        m = _curly_re.match(text)
-        if not m:
-            clean_text = _clean_text(text, cleaner_names)
-            if dictionary is not None:
-                clean_text = [get_arpabet(w, dictionary) for w in clean_text.split(" ")]
-                for i in range(len(clean_text)):
-                    t = clean_text[i]
-                    if t.startswith("{"):
-                        sequence += _arpabet_to_sequence(t[1:-1])
-                    else:
-                        sequence += _symbols_to_sequence(t)
-                    sequence += space
+    text = _clean_text(text, ["english_cleaners"])
+    text = text.upper()
+    text = text.split(' ')
+
+    for phn in text:
+        found = False
+        if phn.startswith("{"):
+            phn = phn.strip().replace('{', '').replace('}', '') + ' '
+            phoneme.append(phn)
+            continue
+        for word, pronunciation in cmu_dict.items():
+            if word == phn:
+                found = True
+                arpa = ''.join(pronunciation) + ' '
+                phoneme.append(arpa)
+                break
+
+        if not found:
+            if phn not in string.punctuation:
+                if stop_on_word_error:
+                    raise Exception(f'"{phn}" NOT FOUND IN DICTIONARY!')
+                print(f'THE WORD "{phn}" WILL BE USED WITHOUT ARPABET PHONEME.')
+                phn = str(phn).replace(' ', '')
+                phoneme.append(phn + ' ')
             else:
-                sequence += _symbols_to_sequence(clean_text)
-            break
-        sequence += _symbols_to_sequence(_clean_text(m.group(1), cleaner_names))
-        sequence += _arpabet_to_sequence(m.group(2))
-        text = m.group(3)
-  
-    # remove trailing space
-    if dictionary is not None:
-        sequence = sequence[:-1] if sequence[-1] == space[0] else sequence
+                phoneme.append(phn)
+
+    text = (''.join(phoneme)
+            .replace(' ,', ', ')
+            .replace(' .', '. ')
+            .replace(' !', '!')
+            .replace(' ?', '? ')
+            .replace(' ;', '; ')
+            .replace(' :', ': ')
+            .replace(' -', ' - ')
+            .strip())
+
+    sequence += _symbols_to_sequence(text)
+
+    # print(sequence_to_text(sequence))
+
     return sequence
-    
-    
-def text_to_sequence_2(text, cleaner_names=["english_cleaners"], dictionary=None):
-    sequence = []
-    space = _symbols_to_sequence(' ')
-    # Check for curly braces and treat their contents as ARPAbet:
-    while len(text):
-        m = _curly_re.match(text)
-        if not m:
-            clean_text = _clean_text(text, cleaner_names)
-            if dictionary is not None:
-                clean_text = [get_arpabet(w, dictionary) for w in clean_text.split(" ")]
-                for i in range(len(clean_text)):
-                    t = clean_text[i]
-                    if t.startswith("{"):
-                        sequence += _arpabet_to_sequence(t[1:-1])
-                    else:
-                        sequence += _symbols_to_sequence(t)
-                    sequence += space
-            else:
-                sequence += _symbols_to_sequence(clean_text)
-            break
-        sequence += _symbols_to_sequence(_clean_text(m.group(1), cleaner_names))
-        sequence += _arpabet_to_sequence(m.group(2))
-        text = m.group(3)
-  
-    # remove trailing space
-    if dictionary is not None:
-        sequence = sequence[:-1] if sequence[-1] == space[0] else sequence
-    
-    print(sequence_to_text(sequence))
-    
-    sequence = np.array([sequence])
-   
-    if torch.cuda.is_available():
-        return torch.autograd.Variable(torch.from_numpy(sequence)).cuda().long()
-    else:
-        return torch.autograd.Variable(torch.from_numpy(sequence)).cpu().long()
 
 
 def sequence_to_text(sequence):
-    '''Converts a sequence of IDs back to a string'''
+    """Converts a sequence of IDs back to a string"""
     result = ''
     for symbol_id in sequence:
         if symbol_id in _id_to_symbol:
             s = _id_to_symbol[symbol_id]
-            # Enclose ARPAbet back in curly braces:
-            if len(s) > 1 and s[0] == '@':
-                s = '{%s}' % s[1:]
             result += s
-    return result.replace('}{', ' ')
+    return result
 
 
 def _clean_text(text, cleaner_names):
