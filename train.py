@@ -64,7 +64,7 @@ class Trainer:
         self.betas = (0.9, 0.999)
         self.eps = 1e-6
         self.train_size = 0.8
-        self.n_workers = 8
+        self.n_workers = 4
         self.val_n_workers = int(self.n_workers / 2)
         self.pin_mem = True
         self.transfer_learning_path = transfer_learning_path
