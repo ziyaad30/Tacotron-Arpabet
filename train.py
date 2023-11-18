@@ -272,9 +272,9 @@ if __name__ == '__main__':
                       500, 
                       2, 
                       '', 
-                      False,
+                      True,
                       './tacotron2_statedict.pt', 
-                      [1000, 2000, 35000],
+                      [2000, 5000, 10000],
                       './checkpoints', 
                       0.0002)
     trainer.run()
