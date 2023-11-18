@@ -268,7 +268,7 @@ if __name__ == '__main__':
     trainer = Trainer(2000, 
                       './dataset/metadata.csv', 
                       './dataset/wavs',
-                      16, 
+                      32, 
                       500, 
                       2, 
                       '', 
