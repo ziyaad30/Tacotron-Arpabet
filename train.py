@@ -238,6 +238,7 @@ class Trainer:
                     )
 
                     self.check_checkpoints()
+                    model.train()
 
                     print("=====================================================")
                 self.isSaveable = True
