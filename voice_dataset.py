@@ -4,8 +4,7 @@ import random
 import torch
 from tacotron2_model import TacotronSTFT
 from scipy.io.wavfile import read
-from text.cleaners import english_cleaners
-from text import text_to_sequence, cmudict
+from text import text_to_sequence
 
 
 def load_wav_to_torch(full_path):
@@ -39,14 +38,13 @@ class VoiceDataset(torch.utils.data.Dataset):
     3) computes mel-spectrograms from audio files.
     """
 
-    def __init__(self, filepaths_and_text, dataset_path, cmudict_path):
+    def __init__(self, filepaths_and_text, dataset_path):
         self.filepaths_and_text = filepaths_and_text
         self.dataset_path = dataset_path
         self.max_wav_value = 32768.0
         self.sampling_rate = 22050
         self.load_mel_from_disk = False
         self.stft = TacotronSTFT()
-        self.cmudict = cmudict.CMUDict(cmudict_path)
         random.shuffle(self.filepaths_and_text)
 
     def get_mel_text_pair(self, audiopath_and_text):
@@ -66,7 +64,7 @@ class VoiceDataset(torch.utils.data.Dataset):
         audiopath, text = audiopath_and_text[0], audiopath_and_text[1]
         text = self.get_text(text)
         mel = self.get_mel(audiopath)
-        return (text, mel)
+        return text, mel
 
     def get_mel(self, filename):
         """
@@ -115,7 +113,7 @@ class VoiceDataset(torch.utils.data.Dataset):
         Tensor
             Int tensor of symbol ids
         """
-        text_norm = text_to_sequence(text, dictionary=self.cmudict)
+        text_norm = text_to_sequence(text)
         text_norm = torch.IntTensor(text_norm)
         return text_norm
 
