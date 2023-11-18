@@ -58,13 +58,15 @@ class Trainer:
         self.isSaveable = False
         self.total_epochs = total_epochs
         self.batch_size = batch_size
+        self.val_batch_size = self.batch_size / 2
         self.seed = 1234
         self.weight_decay = 1e-6
         self.betas = (0.9, 0.999)
         self.eps = 1e-6
         self.train_size = 0.8
-        self.n_workers = 0
-        self.pin_mem = False
+        self.n_workers = 8
+        self.val_n_workers = self.n_workers / 2
+        self.pin_mem = True
         self.transfer_learning_path = transfer_learning_path
         self.eg_text = eg_text
         self.checkpoint_path = checkpoint_path
@@ -125,7 +127,7 @@ class Trainer:
             collate_fn=collate_fn
         )
         val_loader = DataLoader(
-            valset, num_workers=self.n_workers, sampler=None, batch_size=self.batch_size, pin_memory=self.pin_mem,
+            valset, num_workers=self.val_n_workers, sampler=None, batch_size=self.val_batch_size, pin_memory=self.pin_mem,
             collate_fn=collate_fn
         )
 
